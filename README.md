@@ -1,6 +1,6 @@
-# European Art — Object Detection & Style Classification
+# Vision Art AI — Object Detection & Style Classification
 
-A two-model computer vision pipeline for analysing European artworks:
+A two-model computer vision pipeline for analysing artworks:
 
 1. **YOLOv8** — detects iconographic objects inside paintings (134 classes: 80 COCO + 54 DEArt-exclusive).
 2. **MobileNetV3** — classifies the art style of a painting across 27 WikiArt categories.
