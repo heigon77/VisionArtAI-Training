@@ -169,9 +169,9 @@ Training ran for 27 epochs (Stage 2 full fine-tuning) across 134 classes. Metric
 | Precision | 0.485 |
 | Recall | 0.298 |
 
-![YOLO training curves](results/results_yolo.png)
+![YOLO training curves](results_example/results_yolo.png)
 
-![YOLO normalised confusion matrix](results/confusion_matrix_normalized_yolo.png)
+![YOLO normalised confusion matrix](results_example/confusion_matrix_normalized_yolo.png)
 
 **Discussion.** These figures are modest but consistent with the inherent difficulty of the task. Three factors make DEArt significantly harder than standard COCO benchmarks: (1) a 134-class label space with long-tail distribution (rare iconographic classes such as `chalice` or `holy shroud` have very few instances); (2) a severe domain gap between the natural photographs used for ImageNet/COCO pre-training and 12th–18th century paintings; and (3) high within-class visual variation across centuries, painting techniques, and artistic conventions. The original DEArt paper [[1]](#references) documents the same challenges using Faster R-CNN and similar detectors, reporting that cultural heritage imagery consistently yields lower detection scores than natural-image benchmarks — even with task-specific fine-tuning. The two-stage training strategy (frozen backbone warm-up → full fine-tuning) mitigates catastrophic forgetting of the 80 shared COCO classes while allowing the model to learn the 54 art-specific categories.
 
@@ -188,9 +188,9 @@ Training ran for 40 epochs on the full WikiArt 27-class split (85 % train / 15 %
 | Final train accuracy | 74.75 % (epoch 40) |
 | Best val loss | 1.665 |
 
-![Classifier training curves](results/class_training_curves_clean.png)
+![Classifier training curves](results_example/class_training_curves_clean.png)
 
-![Classifier normalised confusion matrix](results/confusion_matrix_seaborn_class.png)
+![Classifier normalised confusion matrix](results_example/confusion_matrix_seaborn_class.png)
 
 **Discussion.** Joshi et al. [[2]](#references) address the same 27-class WikiArt classification problem using **EnAET** — a semi-supervised framework that combines a ResNet backbone with an ensemble of self-supervised spatial and non-spatial transformations — and claim to outperform prior supervised methods by roughly 20 percentage points. Our approach differs considerably in scope and intent: MobileNetV3-Small is a deliberately lightweight architecture (~2.5 M parameters, vs. ~25 M for ResNet-50), trained fully supervised with standard augmentation and no self-supervised pre-training phase. Given these constraints, the **~60.8 % validation accuracy** is a competitive result, demonstrating that aggressive data augmentation (RandAugment) and a well-tuned cosine annealing schedule can compensate substantially for the smaller model capacity. The ~14 pp gap between train and val accuracy points to mild overfitting; stronger regularisation, mixup, or a heavier backbone (e.g. EfficientNet-B3) would be natural next steps.
 
