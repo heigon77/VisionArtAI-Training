@@ -24,7 +24,7 @@ Both datasets are downloaded and cached automatically by HuggingFace `datasets` 
 
 ```
 .
-├── data_process.py          # Dataset preparation — all two stages (see Workflow)
+├── data_process.py          # Dataset preparation — all four stages (see Workflow)
 ├── train_yolo.py            # Two-stage YOLOv8 fine-tuning
 ├── train_class.py           # WikiArt style classifier training (MobileNetV3)
 ├── export_yolo_onnx.py      # Exports YOLO checkpoint → ONNX + INT8
@@ -148,23 +148,70 @@ Trains a MobileNetV3-Small (27-class) on WikiArt for 40 epochs with:
 **Style classifier:**
 
 ```bash
-python export_class_onnx.py
-# outputs: style_classifier.onnx   style_classifier_int8.onnx
+python export_class_onnx.py   # outputs: style_classifier.onnx  style_classifier_int8.onnx
+python export_yolo_onnx.py    # outputs: best.onnx  best_int8.onnx
 ```
 
-**Object detector:**
-
-```bash
-# On the first run, uncomment the Step 1 block inside export_yolo_onnx.py, then:
-python export_yolo_onnx.py
-# outputs: best.onnx   best_int8.onnx
-```
-
-INT8 models are ~4× smaller than FP32 with minimal accuracy loss, making them well-suited for CPU or edge deployment.
+INT8 models are ~4× smaller than FP32 with minimal accuracy loss, suited for CPU or edge deployment.
 
 ---
 
-## Reference
+## Results
+
+### Object detection — YOLOv8n fine-tuned on DEArt
+
+Training ran for 27 epochs (Stage 2 full fine-tuning) across 134 classes. Metrics are reported at the best checkpoint.
+
+| Metric | Value |
+|---|---|
+| mAP@0.5 | **0.298** |
+| mAP@0.5:0.95 | **0.195** |
+| Precision | 0.485 |
+| Recall | 0.298 |
+
+![YOLO training curves](results/results_yolo.png)
+
+![YOLO normalised confusion matrix](results/confusion_matrix_normalized_yolo.png)
+
+**Discussion.** These figures are modest but consistent with the inherent difficulty of the task. Three factors make DEArt significantly harder than standard COCO benchmarks: (1) a 134-class label space with long-tail distribution (rare iconographic classes such as `chalice` or `holy shroud` have very few instances); (2) a severe domain gap between the natural photographs used for ImageNet/COCO pre-training and 12th–18th century paintings; and (3) high within-class visual variation across centuries, painting techniques, and artistic conventions. The original DEArt paper [[1]](#references) documents the same challenges using Faster R-CNN and similar detectors, reporting that cultural heritage imagery consistently yields lower detection scores than natural-image benchmarks — even with task-specific fine-tuning. The two-stage training strategy (frozen backbone warm-up → full fine-tuning) mitigates catastrophic forgetting of the 80 shared COCO classes while allowing the model to learn the 54 art-specific categories.
+
+---
+
+### Style classification — MobileNetV3-Small on WikiArt
+
+Training ran for 40 epochs on the full WikiArt 27-class split (85 % train / 15 % val).
+
+| Metric | Value |
+|---|---|
+| Best val accuracy | **60.82 %** (epoch 35) |
+| Final val accuracy | 60.67 % (epoch 40) |
+| Final train accuracy | 74.75 % (epoch 40) |
+| Best val loss | 1.665 |
+
+![Classifier training curves](results/class_training_curves_clean.png)
+
+![Classifier normalised confusion matrix](results/confusion_matrix_seaborn_class.png)
+
+**Discussion.** Joshi et al. [[2]](#references) address the same 27-class WikiArt classification problem using **EnAET** — a semi-supervised framework that combines a ResNet backbone with an ensemble of self-supervised spatial and non-spatial transformations — and claim to outperform prior supervised methods by roughly 20 percentage points. Our approach differs considerably in scope and intent: MobileNetV3-Small is a deliberately lightweight architecture (~2.5 M parameters, vs. ~25 M for ResNet-50), trained fully supervised with standard augmentation and no self-supervised pre-training phase. Given these constraints, the **~60.8 % validation accuracy** is a competitive result, demonstrating that aggressive data augmentation (RandAugment) and a well-tuned cosine annealing schedule can compensate substantially for the smaller model capacity. The ~14 pp gap between train and val accuracy points to mild overfitting; stronger regularisation, mixup, or a heavier backbone (e.g. EfficientNet-B3) would be natural next steps.
+
+**Known challenges of WikiArt 27-class classification:**
+- Severe class imbalance (Impressionism has ~13 k images; Pointillism fewer than 1 k).
+- Ambiguous boundaries between related styles (Cubism / Analytical Cubism / Synthetic Cubism), visible as confusion clusters in the matrix.
+- User-contributed, noisy labels — a limitation acknowledged across the art classification literature.
+
+---
+
+## References
+
+<a id="references"></a>
+
+[1] Reshetnikov, A., Marinescu, M. C., & Lopez, J. M. (2022). **DEArt: Dataset of European Art.** *Computer Vision – ECCV 2022 Workshops.* Lecture Notes in Computer Science, vol. 13801. Springer, Cham. [https://doi.org/10.1007/978-3-031-25056-9_15](https://doi.org/10.1007/978-3-031-25056-9_15) · [arXiv:2211.01226](https://arxiv.org/abs/2211.01226)
+
+[2] Joshi, A., Agrawal, A., & Nair, S. (2020). **Art Style Classification with Self-Trained Ensemble of AutoEncoding Transformations.** [arXiv:2012.03377](https://arxiv.org/abs/2012.03377)
+
+---
+
+## Class reference
 
 ### Art style classes (27)
 
