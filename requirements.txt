@@ -1,0 +1,39 @@
+# European Art — Object Detection & Style Classification
+# Install: pip install -r requirements.txt
+#
+# GPU users: install the CUDA PyTorch wheel BEFORE running this file.
+# See: https://pytorch.org/get-started/locally/
+# Example (CUDA 12.1):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# ── Deep learning core ────────────────────────────────────────────
+torch>=2.2.0
+torchvision>=0.17.0
+
+# ── Model libraries ───────────────────────────────────────────────
+ultralytics>=8.2.0          # YOLOv8 training + export
+timm>=1.0.0                 # MobileNetV3 and other pretrained architectures
+
+# ── Dataset loading ───────────────────────────────────────────────
+datasets>=2.19.0            # HuggingFace Hub — biglam/european_art, huggan/wikiart
+
+# ── ONNX export + quantisation ────────────────────────────────────
+onnx>=1.16.0
+onnxruntime>=1.18.0
+
+# ── Training utilities ────────────────────────────────────────────
+torch_snippets>=0.520       # Report — lightweight training logger used in train_class.py
+
+# ── Metrics and visualisation ─────────────────────────────────────
+scikit-learn>=1.4.0         # confusion_matrix, train_test_split
+pandas>=2.2.0               # metrics CSV
+matplotlib>=3.8.0           # training curves
+seaborn>=0.13.0             # confusion matrix heatmap
+
+# ── Image processing ──────────────────────────────────────────────
+opencv-python-headless>=4.9.0   # bounding box rendering (no GUI dependency)
+numpy>=1.26.0
+
+# ── Misc ──────────────────────────────────────────────────────────
+requests>=2.31.0            # image download in preprocess / inspect stage
+pyyaml>=6.0.1               # dataset.yaml generation
